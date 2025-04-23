@@ -1,6 +1,6 @@
 {
     "builds": [{
-      "src": "app.py",
+      "src": "slope.py",
       "use": "@vercel/python"
     }],
     "routes": [{
@@ -8,4 +8,4 @@
       "dest": "app.py"
     }]
   }
-  
+   
