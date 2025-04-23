@@ -1,18 +1,21 @@
-import json
+from flask import Flask, request, jsonify
 import requests
 from geopy.distance import geodesic
 
-def handler(request):
+app = Flask(__name__)
+
+@app.route('/api/slope', methods=['POST'])
+def analyze_slope():
     try:
-        body = request.json()
-        origin = tuple(body["origin"])         # [lat, lon]
-        destination = tuple(body["destination"])
+        data = request.get_json()
+        origin = tuple(data['origin'])         # [lat, lon]
+        destination = tuple(data['destination'])
 
         # Get route from OSRM
         osrm_url = f"http://router.project-osrm.org/route/v1/driving/{origin[1]},{origin[0]};{destination[1]},{destination[0]}?overview=full&geometries=geojson"
         res = requests.get(osrm_url).json()
         coordinates = res['routes'][0]['geometry']['coordinates']
-        coordinates = [(lat, lon) for lon, lat in coordinates]
+        coordinates = [(lat, lon) for lon, lat in coordinates]  # Flip
 
         # Sample every 0.25 km
         sampled_points = [coordinates[0]]
@@ -36,7 +39,6 @@ def handler(request):
         for i in range(1, len(sampled_points)):
             d = geodesic(sampled_points[i-1], sampled_points[i]).km
             diff = elevations[i] - elevations[i-1]
-
             if diff < 7:
                 flat += d
             elif 7 <= diff < 15:
@@ -44,26 +46,17 @@ def handler(request):
             else:
                 steep += d
 
-        total_distance_km = geodesic(origin, destination).km
-        total_tagged = flat + uphill + steep
-
-        return {
-            "statusCode": 200,
-            "body": json.dumps({
-                "origin": f"{origin[1]},{origin[0]}",
-                "destination": f"{destination[1]},{destination[0]}",
-                "flat_km": round(flat, 2),
-                "uphill_km": round(uphill, 2),
-                "steep_uphill_km": round(steep, 2),
-                "total_distance_km": round(total_tagged, 2)
-            }),
-            "headers": {
-                "Content-Type": "application/json"
-            }
-        }
+        return jsonify({
+            "origin": f"{origin[1]},{origin[0]}",
+            "destination": f"{destination[1]},{destination[0]}",
+            "flat_km": round(flat, 2),
+            "uphill_km": round(uphill, 2),
+            "steep_uphill_km": round(steep, 2),
+            "total_distance_km": round(flat + uphill + steep, 2)
+        })
 
     except Exception as e:
-        return {
-            "statusCode": 500,
-            "body": json.dumps({"error": str(e)})
-        }
+        return jsonify({"error": str(e)}), 500
+
+if __name__ == '__main__':
+    app.run(debug=True)
