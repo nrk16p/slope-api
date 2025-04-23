@@ -2,9 +2,11 @@ from flask import Flask, request, jsonify
 import requests
 from geopy.distance import geodesic
 
+
+
 app = Flask(__name__)
 
-@app.route('/api/slope', methods=['POST'])
+@app.route('/slope', methods=['POST'])
 def analyze_slope():
     try:
         data = request.get_json()
