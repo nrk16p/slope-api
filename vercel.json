@@ -1,4 +1,10 @@
 {
     "version": 2,
-    "builds": [{ "src": "api/slope.py", "use": "@vercel/python" }]
+    "builds": [
+      {
+        "src": "api/slope.py",
+        "use": "@vercel/python"
+      }
+    ]
   }
+  
