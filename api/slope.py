@@ -6,7 +6,7 @@ from geopy.distance import geodesic
 
 app = Flask(__name__)
 
-@app.route('/slope', methods=['POST'])
+@app.route('/api/slope', methods=['POST'])
 def analyze_slope():
     try:
         data = request.get_json()
