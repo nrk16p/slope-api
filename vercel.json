@@ -1,9 +1,16 @@
 {
-  "version": 2,
-  "builds": [
-    {
-      "src": "api/slope.py",
-      "use": "@vercel/python"
-    }
-  ]
-}
+    "version": 2,
+    "builds": [
+      {
+        "src": "api/slope.py",
+        "use": "@vercel/python"
+      }
+    ],
+    "routes": [
+      {
+        "src": "/api/slope",
+        "dest": "api/slope.py"
+      }
+    ]
+  }
+  

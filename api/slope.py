@@ -2,24 +2,20 @@ from flask import Flask, request, jsonify
 import requests
 from geopy.distance import geodesic
 
-
-
 app = Flask(__name__)
 
 @app.route('/api/slope', methods=['POST'])
 def analyze_slope():
     try:
         data = request.get_json()
-        origin = tuple(data['origin'])         # [lat, lon]
+        origin = tuple(data['origin'])
         destination = tuple(data['destination'])
 
-        # Get route from OSRM
         osrm_url = f"http://router.project-osrm.org/route/v1/driving/{origin[1]},{origin[0]};{destination[1]},{destination[0]}?overview=full&geometries=geojson"
         res = requests.get(osrm_url).json()
         coordinates = res['routes'][0]['geometry']['coordinates']
-        coordinates = [(lat, lon) for lon, lat in coordinates]  # Flip
+        coordinates = [(lat, lon) for lon, lat in coordinates]
 
-        # Sample every 0.25 km
         sampled_points = [coordinates[0]]
         accum_dist = 0
         for i in range(1, len(coordinates)):
@@ -31,12 +27,10 @@ def analyze_slope():
                 sampled_points.append(current)
                 accum_dist = 0
 
-        # Get elevation
         locations = [{"latitude": lat, "longitude": lon} for lat, lon in sampled_points]
         elev_res = requests.post("https://api.open-elevation.com/api/v1/lookup", json={"locations": locations})
         elevations = [pt["elevation"] for pt in elev_res.json()["results"]]
 
-        # Analyze slope
         flat = uphill = steep = 0
         for i in range(1, len(sampled_points)):
             d = geodesic(sampled_points[i-1], sampled_points[i]).km
@@ -59,6 +53,3 @@ def analyze_slope():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
-if __name__ == '__main__':
-    app.run(debug=True)
