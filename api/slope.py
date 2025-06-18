@@ -45,10 +45,10 @@ def analyze_slope():
         return jsonify({
             "origin": f"{origin[1]},{origin[0]}",
             "destination": f"{destination[1]},{destination[0]}",
-            "flat_km": round(flat,2),
-            "uphill_km": round(uphill,2),
-            "steep_uphill_km": round(steep,2),
-            "total_distance_km": round(flat + uphill + steep,2)
+            "flat_km": round(flat),
+            "uphill_km": round(uphill),
+            "steep_uphill_km": round(steep),
+            "total_distance_km": round(flat + uphill + steep)
         })
 
     except Exception as e:
